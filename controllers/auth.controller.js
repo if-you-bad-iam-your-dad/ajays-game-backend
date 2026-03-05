@@ -24,8 +24,9 @@ exports.login = async (req, res) => {
     res.status(200).json({
       success: true,
       message: 'Login successful. Use the returned userId as X-User-Id header for all subsequent requests.',
-      data: { user, userId },
+      data: { user, userId, role: user.role.role_key },
     });
+    console.log("user", user.role.role_key);
   } catch (error) {
     res.status(401).json({
       success: false,
