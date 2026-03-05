@@ -55,8 +55,8 @@ const router = Router();
  *       200:
  *         description: Transfer successful
  */
-router.get('/', protect, walletController.getWallet);
-router.get('/transactions', protect, walletController.getTransactions);
-router.post('/transfer', protect, walletController.transferFunds);
+router.get('/', walletController.getWallet);
+router.get('/transactions', walletController.getTransactions);
+router.post('/transfer', walletController.transferFunds);
 
 module.exports = router;

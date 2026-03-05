@@ -12,7 +12,7 @@ const router = Router();
  *     summary: Buy an insurance policy
  *     security: [{ bearerAuth: [] }]
  */
-router.post('/insurance/buy', protect, advancedController.buyInsurance);
+router.post('/insurance/buy', advancedController.buyInsurance);
 
 /**
  * @openapi
@@ -22,7 +22,7 @@ router.post('/insurance/buy', protect, advancedController.buyInsurance);
  *     summary: Create an investment (SIP/Bond)
  *     security: [{ bearerAuth: [] }]
  */
-router.post('/invest', protect, advancedController.invest);
+router.post('/invest', advancedController.invest);
 
 /**
  * @openapi
@@ -32,7 +32,7 @@ router.post('/invest', protect, advancedController.invest);
  *     summary: Join a SHG or Co-op group
  *     security: [{ bearerAuth: [] }]
  */
-router.post('/groups/join', protect, advancedController.joinGroup);
+router.post('/groups/join', advancedController.joinGroup);
 
 /**
  * @openapi
@@ -42,6 +42,6 @@ router.post('/groups/join', protect, advancedController.joinGroup);
  *     summary: Set or update a monthly budget category
  *     security: [{ bearerAuth: [] }]
  */
-router.post('/budget', protect, advancedController.setBudget);
+router.post('/budget', advancedController.setBudget);
 
 module.exports = router;

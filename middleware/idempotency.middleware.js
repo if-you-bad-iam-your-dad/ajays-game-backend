@@ -8,7 +8,7 @@ const idempotency = async (req, res, next) => {
   const key = req.headers['idempotency-key'];
   
   // Skip if no key provided or if it's not a write operation
-  if (!key || ['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
+  if (!key || ['GET', 'HEAD', 'OPTIONS', 'DELETE'].includes(req.method)) {
     return next();
   }
 
@@ -34,22 +34,26 @@ const idempotency = async (req, res, next) => {
       });
     }
 
-    // Intercept res.json to save the response
-    const originalJson = res.json;
-    res.json = function (body) {
-      // Only cache successful or client-error responses, usually 2xx and 4xx
-      // But for safety, we often only cache 2xx
+    // Capture the original send to save the response
+    const originalSend = res.send;
+    res.send = function (body) {
+      // Only cache successful responses (2xx)
       if (res.statusCode >= 200 && res.statusCode < 300) {
-        IdempotencyKey.create({
-          idempotency_key: key,
-          user_id: req.user.id,
-          request_path: req.originalUrl,
-          response_code: res.statusCode,
-          response_body: body
-        }).catch(err => console.error('Failed to save idempotency key:', err));
+        try {
+          const responseBody = JSON.parse(body);
+          IdempotencyKey.create({
+            idempotency_key: key,
+            user_id: req.user.id,
+            request_path: req.originalUrl,
+            response_code: res.statusCode,
+            response_body: responseBody
+          }).catch(err => console.error('Failed to save idempotency key:', err));
+        } catch (e) {
+          // If not JSON, we don't cache it for now or just skip
+        }
       }
       
-      return originalJson.call(this, body);
+      return originalSend.call(this, body);
     };
 
     next();

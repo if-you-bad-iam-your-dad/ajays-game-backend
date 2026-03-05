@@ -4,7 +4,8 @@ const bcrypt = require('bcryptjs');
 const { 
   sequelize, User, Role, UserProfile, UserWallet, Crop, Seed, 
   Season, Group, GroupMember, Land, Inventory, MarketListing, 
-  Loan, LoanInstallment, EconomicState 
+  Loan, LoanInstallment, EconomicState, InvestmentProduct, UserInvestment,
+  WalletTransaction, MarketTransaction, IdempotencyKey
 } = require('../models');
 
 async function seed() {
@@ -15,6 +16,10 @@ async function seed() {
     // Caution: This forces sync, which drops tables. Better to just truncate if tables exist.
     // For a seed script, we'll assume tables exist and just clear them.
     await sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
+    await WalletTransaction.destroy({ where: {}, truncate: true });
+    await MarketTransaction.destroy({ where: {}, truncate: true });
+    await IdempotencyKey.destroy({ where: {}, truncate: true });
+    await UserInvestment.destroy({ where: {}, truncate: true });
     await User.destroy({ where: {}, truncate: true });
     await Role.destroy({ where: {}, truncate: true });
     await UserProfile.destroy({ where: {}, truncate: true });
@@ -23,11 +28,13 @@ async function seed() {
     await Seed.destroy({ where: {}, truncate: true });
     await Season.destroy({ where: {}, truncate: true });
     await Group.destroy({ where: {}, truncate: true });
+    await GroupMember.destroy({ where: {}, truncate: true });
     await Land.destroy({ where: {}, truncate: true });
     await Inventory.destroy({ where: {}, truncate: true });
     await MarketListing.destroy({ where: {}, truncate: true });
     await Loan.destroy({ where: {}, truncate: true });
     await LoanInstallment.destroy({ where: {}, truncate: true });
+    await InvestmentProduct.destroy({ where: {}, truncate: true });
     await sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
 
     console.log('✓ Tables cleared');
@@ -62,6 +69,14 @@ async function seed() {
       status: 'active'
     });
     console.log('✓ Season seeded');
+
+    // 4.5 Seed Investment Products
+    await InvestmentProduct.bulkCreate([
+      { id: 1, product_type: 'sip', base_return_rate: 12.0, volatility: 0.15 },
+      { id: 2, product_type: 'bond', base_return_rate: 7.5, volatility: 0.05 },
+      { id: 3, product_type: 'farmer_bond', base_return_rate: 9.0, volatility: 0.08 },
+    ]);
+    console.log('✓ Investment Products seeded');
 
     // 5. Seed Users (Password: password123)
     const salt = await bcrypt.genSalt(10);

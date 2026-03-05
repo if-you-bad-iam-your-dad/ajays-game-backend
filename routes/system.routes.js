@@ -6,13 +6,26 @@ const router = Router();
 
 /**
  * @openapi
+ * /api/system/game-state:
+ *   get:
+ *     tags: [System]
+ *     summary: Get initial game state (Bootstrap)
+ *     description: Returns current economic state, active season, and crops/seeds for Unity client initialization.
+ *     responses:
+ *       200:
+ *         description: Initial game world state
+ */
+router.get('/game-state', systemController.getGameState);
+
+/**
+ * @openapi
  * /api/system/engine/monthly:
  *   post:
  *     tags: [System]
  *     summary: Trigger Monthly Financial Engine
  *     security: [{ bearerAuth: [] }]
  */
-router.post('/engine/monthly', protect, authorize('farmer', 'woman', 'student', 'young_adult'), systemController.triggerMonthlyEngine);
+router.post('/engine/monthly', authorize('farmer', 'woman', 'student', 'young_adult'), systemController.triggerMonthlyEngine);
 
 /**
  * @openapi
@@ -22,7 +35,7 @@ router.post('/engine/monthly', protect, authorize('farmer', 'woman', 'student', 
  *     summary: Trigger Daily Micro Engine
  *     security: [{ bearerAuth: [] }]
  */
-router.post('/engine/daily', protect, systemController.triggerDailyEngine);
+router.post('/engine/daily', systemController.triggerDailyEngine);
 
 /**
  * @openapi
@@ -32,7 +45,7 @@ router.post('/engine/daily', protect, systemController.triggerDailyEngine);
  *     summary: Trigger Global Economic Events
  *     security: [{ bearerAuth: [] }]
  */
-router.post('/engine/events', protect, systemController.triggerGlobalEvents);
+router.post('/engine/events', systemController.triggerGlobalEvents);
 
 /**
  * @openapi
@@ -51,6 +64,6 @@ router.post('/engine/events', protect, systemController.triggerGlobalEvents);
  *             properties:
  *               seasonId: { type: 'integer' }
  */
-router.post('/seasons/resolve', protect, systemController.triggerSeasonResolution);
+router.post('/seasons/resolve', systemController.triggerSeasonResolution);
 
 module.exports = router;

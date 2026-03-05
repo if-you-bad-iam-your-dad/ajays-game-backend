@@ -16,8 +16,12 @@ const options = {
     },
     servers: [
       {
+        url: '/',
+        description: 'Current Host (Dynamic)',
+      },
+      {
         url: 'http://localhost:5000',
-        description: 'Development Server',
+        description: 'Development Server (Localhost)',
       },
     ],
     components: {
@@ -29,27 +33,109 @@ const options = {
         },
       },
       schemas: {
-        Error: {
+        BaseResponse: {
           type: 'object',
           properties: {
-            code: { type: 'string' },
+            success: { type: 'boolean' },
             message: { type: 'string' },
+            timestamp: { type: 'string', format: 'date-time' },
+          },
+        },
+        ErrorResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: false },
+            error: {
+              type: 'object',
+              properties: {
+                code: { type: 'string' },
+                message: { type: 'string' },
+                details: { type: 'object' },
+              },
+            },
           },
         },
         User: {
           type: 'object',
           properties: {
-            id: { type: 'integer' },
+            id: { type: 'integer', format: 'int64' },
             username: { type: 'string' },
             email: { type: 'string' },
-            role_key: { type: 'string', enum: ['farmer', 'woman', 'student', 'young_adult'] },
+            role_id: { type: 'integer' },
+            status: { type: 'string', enum: ['active', 'suspended', 'deleted'] },
+          },
+        },
+        UserProfile: {
+          type: 'object',
+          properties: {
+            user_id: { type: 'integer', format: 'int64' },
+            credit_trust: { type: 'integer' },
+            fr_score: { type: 'integer' },
+            stress_index: { type: 'integer' },
+            reputation_score: { type: 'integer' },
+            digital_confidence: { type: 'integer' },
+            scam_awareness: { type: 'integer' },
+            smart_decision_rate: { type: 'integer' },
           },
         },
         Wallet: {
           type: 'object',
           properties: {
+            user_id: { type: 'integer', format: 'int64' },
             balance: { type: 'string', example: '1000.00' },
             reserved_balance: { type: 'string', example: '0.00' },
+          },
+        },
+        Season: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer' },
+            name: { type: 'string' },
+            status: { type: 'string', enum: ['active', 'completed', 'upcoming'] },
+            monsoon_strength: { type: 'string', example: '1.00' },
+          },
+        },
+        Crop: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer' },
+            name: { type: 'string' },
+            base_yield: { type: 'string' },
+            base_price: { type: 'string' },
+          },
+        },
+        Seed: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer' },
+            crop_id: { type: 'integer' },
+            name: { type: 'string' },
+            yield_multiplier: { type: 'string' },
+            cost: { type: 'string' },
+          },
+        },
+        Land: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer', format: 'int64' },
+            user_id: { type: 'integer', format: 'int64' },
+            area: { type: 'string' },
+            land_type: { type: 'string' },
+            status: { type: 'string' },
+          },
+        },
+        FarmPlan: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer', format: 'int64' },
+            user_id: { type: 'integer', format: 'int64' },
+            land_id: { type: 'integer', format: 'int64' },
+            season_id: { type: 'integer' },
+            crop_id: { type: 'integer' },
+            seed_id: { type: 'integer' },
+            area_allocated: { type: 'string' },
+            planned_yield: { type: 'string' },
+            status: { type: 'string' },
           },
         },
       },

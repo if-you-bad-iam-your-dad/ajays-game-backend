@@ -32,17 +32,33 @@ class AgriService {
       const seed = await Seed.findByPk(seedId);
       if (!seed || seed.crop_id !== parseInt(cropId)) throw new Error('Invalid seed for this crop');
 
-      // 2. Check if land is already used in this season
+      // 2. Check and handle existing plan for this land in this season
       const existingPlan = await FarmPlan.findOne({
-        where: { land_id: landId, season_id: seasonId, status: 'planned' }
+        where: { land_id: landId, season_id: seasonId, status: 'planned' },
+        transaction
       });
-      if (existingPlan) throw new Error('Land is already allocated for this season');
+      
+      if (existingPlan) {
+        // Option A: Just update the existing plan (more efficient)
+        // Option B: Delete and recreate (safer if associations or complex hooks involved)
+        // We'll go with updating it.
+        const plannedYield = parseFloat(crop.base_yield) * parseFloat(areaAllocated) * parseFloat(seed.yield_multiplier);
+        
+        existingPlan.crop_id = cropId;
+        existingPlan.seed_id = seedId;
+        existingPlan.area_allocated = areaAllocated;
+        existingPlan.planned_yield = plannedYield;
+        await existingPlan.save({ transaction });
+        
+        await transaction.commit();
+        return existingPlan;
+      }
 
-      // 3. Calculate Planned Yield
+      // 3. Calculate Planned Yield for NEW plan
       // Formula: planned_yield = crop.base_yield * areaAllocated * seed.yield_multiplier
       const plannedYield = parseFloat(crop.base_yield) * parseFloat(areaAllocated) * parseFloat(seed.yield_multiplier);
 
-      // 4. Create Plan
+      // 4. Create NEW Plan
       const plan = await FarmPlan.create({
         user_id: userId,
         land_id: landId,

@@ -41,7 +41,7 @@ const router = Router();
  *         description: Listing created
  */
 router.get('/listings', marketController.getListings);
-router.post('/listings', protect, marketController.createListing);
+router.post('/listings', marketController.createListing);
 
 /**
  * @openapi
@@ -72,6 +72,6 @@ router.post('/listings', protect, marketController.createListing);
  *       200:
  *         description: Purchase successful
  */
-router.post('/listings/:id/buy', protect, marketController.buyItem);
+router.post('/listings/:id/buy', marketController.buyItem);
 
 module.exports = router;

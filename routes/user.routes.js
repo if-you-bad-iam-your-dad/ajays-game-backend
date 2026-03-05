@@ -35,7 +35,7 @@ const router = Router();
  *       200:
  *         description: Profile updated successfully
  */
-router.get('/me', protect, userController.getMe);
-router.patch('/me', protect, userController.updateMe);
+router.get('/me', userController.getMe);
+router.patch('/me', userController.updateMe);
 
 module.exports = router;

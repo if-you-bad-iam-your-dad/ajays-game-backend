@@ -17,7 +17,7 @@ const router = Router();
  *       200:
  *         description: List of lands owned by the user
  */
-router.get('/', protect, landController.getLands);
+router.get('/', landController.getLands);
 
 /**
  * @openapi
@@ -32,7 +32,7 @@ router.get('/', protect, landController.getLands);
  *       200:
  *         description: Active season details
  */
-router.get('/seasons/active', protect, landController.getActiveSeason);
+router.get('/seasons/active', landController.getActiveSeason);
 
 /**
  * @openapi
@@ -60,6 +60,6 @@ router.get('/seasons/active', protect, landController.getActiveSeason);
  *       201:
  *         description: Farm plan created
  */
-router.post('/farm-plans', protect, authorize('farmer'), landController.createFarmPlan);
+router.post('/farm-plans', authorize('farmer'), landController.createFarmPlan);
 
 module.exports = router;

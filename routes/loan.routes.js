@@ -17,7 +17,7 @@ const router = Router();
  *       200:
  *         description: List of active and past loans
  */
-router.get('/', protect, loanController.getLoans);
+router.get('/', loanController.getLoans);
 
 /**
  * @openapi
@@ -44,7 +44,7 @@ router.get('/', protect, loanController.getLoans);
  *       201:
  *         description: Loan approved and disbursed
  */
-router.post('/apply', protect, loanController.applyLoan);
+router.post('/apply', loanController.applyLoan);
 
 /**
  * @openapi
@@ -64,6 +64,6 @@ router.post('/apply', protect, loanController.applyLoan);
  *       200:
  *         description: Installment repaid successfully
  */
-router.post('/installments/:id/repay', protect, loanController.repayLoan);
+router.post('/installments/:id/repay', loanController.repayLoan);
 
 module.exports = router;

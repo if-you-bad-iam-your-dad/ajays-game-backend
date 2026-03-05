@@ -1,5 +1,5 @@
 const { 
-  InsurancePolicy, UserInvestment, SavingsGoal, Group, GroupMember, Budget, 
+  InsurancePolicy, UserInvestment, InvestmentProduct, SavingsGoal, Group, GroupMember, Budget, 
   Season, Crop, sequelize 
 } = require('../models');
 const walletService = require('./wallet.service');
@@ -96,6 +96,17 @@ class AdvancedService {
     const t = await sequelize.transaction();
 
     try {
+      // 1. Find the investment product
+      const product = await InvestmentProduct.findOne({
+        where: { product_type: productType },
+        transaction: t
+      });
+
+      if (!product) {
+        throw new Error(`Investment product '${productType}' not found`);
+      }
+
+      // 2. Deduct from wallet
       await walletService.addTransaction({
         userId,
         amount: -amountFloat,
@@ -103,9 +114,10 @@ class AdvancedService {
         transaction: t
       });
 
+      // 3. Create investment record
       const investment = await UserInvestment.create({
         user_id: userId,
-        product_type: productType,
+        product_id: product.id,
         invested_amount: amountFloat,
         current_value: amountFloat,
         maturity_date: maturityDate,

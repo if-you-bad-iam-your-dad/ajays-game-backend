@@ -1,6 +1,7 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
 const User = require('./User');
+const InvestmentProduct = require('./InvestmentProduct');
 
 const UserInvestment = sequelize.define('UserInvestment', {
   id: {
@@ -13,9 +14,10 @@ const UserInvestment = sequelize.define('UserInvestment', {
     allowNull: false,
     references: { model: User, key: 'id' },
   },
-  product_type: {
-    type: DataTypes.ENUM('sip', 'bond', 'farmer_bond'),
+  product_id: {
+    type: DataTypes.INTEGER,
     allowNull: false,
+    references: { model: InvestmentProduct, key: 'id' },
   },
   invested_amount: {
     type: DataTypes.DECIMAL(14, 2),

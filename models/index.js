@@ -19,6 +19,7 @@ const EconomicState = require('./EconomicState');
 const ActionLog = require('./ActionLog');
 const SavingsGoal = require('./SavingsGoal');
 const UserInvestment = require('./UserInvestment');
+const InvestmentProduct = require('./InvestmentProduct');
 const InsurancePolicy = require('./InsurancePolicy');
 const Group = require('./Group');
 const GroupMember = require('./GroupMember');
@@ -79,6 +80,8 @@ User.hasMany(SavingsGoal, { foreignKey: 'user_id', as: 'savingsGoals' });
 SavingsGoal.belongsTo(User, { foreignKey: 'user_id' });
 User.hasMany(UserInvestment, { foreignKey: 'user_id', as: 'investments' });
 UserInvestment.belongsTo(User, { foreignKey: 'user_id' });
+UserInvestment.belongsTo(InvestmentProduct, { foreignKey: 'product_id', as: 'product' });
+InvestmentProduct.hasMany(UserInvestment, { foreignKey: 'product_id' });
 
 // Insurance
 User.hasMany(InsurancePolicy, { foreignKey: 'user_id', as: 'policies' });
@@ -120,6 +123,7 @@ module.exports = {
   ActionLog,
   SavingsGoal,
   UserInvestment,
+  InvestmentProduct,
   InsurancePolicy,
   Group,
   GroupMember,

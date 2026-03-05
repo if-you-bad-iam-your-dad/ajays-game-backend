@@ -25,13 +25,25 @@ app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(idempotency);
 
 // Swagger Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+// Unity Compatibility: Direct Swagger JSON access
+app.get('/swagger.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
+});
+
 // Routes
+// Note: Idempotency middleware is now applied inside routes or after auth
 app.use('/api/auth', authRoutes);
+
+// Protected routes should have idempotency
+const { protect } = require('./middleware/auth.middleware');
+app.use(protect);
+app.use(idempotency);
+
 app.use('/api/market', marketRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/wallet', walletRoutes);
