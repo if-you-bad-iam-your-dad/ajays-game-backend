@@ -1,54 +1,44 @@
-const jwt = require('jsonwebtoken');
 const { User, Role } = require('../models');
 
+/**
+ * User Identification Middleware (No JWT)
+ * 
+ * Reads X-User-Id from the request header and loads the user from the database.
+ * This replaces JWT authentication for the game client.
+ * 
+ * Usage: Client sends header: X-User-Id: 1
+ */
 exports.protect = async (req, res, next) => {
-  let token;
+  const userId = req.headers['x-user-id'];
 
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-    token = req.headers.authorization.split(' ')[1];
-  }
-
-  if (!token) {
-    return res.status(401).json({
+  if (!userId) {
+    return res.status(400).json({
       success: false,
-      error: { code: 'NOT_AUTHORIZED', message: 'Not authorized to access this route' },
+      error: { code: 'NO_USER_ID', message: 'X-User-Id header is required' },
     });
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    req.user = await User.findByPk(decoded.id, {
+    const user = await User.findByPk(userId, {
       include: [{ model: Role, as: 'role' }]
     });
 
-    if (!req.user) {
-       return res.status(401).json({
+    if (!user) {
+      return res.status(404).json({
         success: false,
-        error: { code: 'USER_NOT_FOUND', message: 'User not found' },
+        error: { code: 'USER_NOT_FOUND', message: `User with id ${userId} not found` },
       });
     }
 
+    req.user = user;
     next();
   } catch (error) {
-    return res.status(401).json({
+    return res.status(500).json({
       success: false,
-      error: { code: 'INVALID_TOKEN', message: 'Token is invalid or expired' },
+      error: { code: 'USER_LOAD_FAILED', message: error.message },
     });
   }
 };
 
-exports.authorize = (...roles) => {
-  return (req, res, next) => {
-    if (!roles.includes(req.user.role.role_key)) {
-      return res.status(403).json({
-        success: false,
-        error: {
-          code: 'FORBIDDEN',
-          message: `User role ${req.user.role.role_key} is not authorized to access this route`,
-        },
-      });
-    }
-    next();
-  };
-};
+// authorize is a no-op — role-based access can be added later if needed
+exports.authorize = (...roles) => (req, res, next) => next();

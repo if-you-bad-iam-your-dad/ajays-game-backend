@@ -1,6 +1,5 @@
 const { Router } = require('express');
 const marketController = require('../controllers/market.controller');
-const { protect } = require('../middleware/auth.middleware');
 
 const router = Router();
 
@@ -11,19 +10,31 @@ const router = Router();
  *     tags:
  *       - Market
  *     summary: Get all active listings
+ *     security:
+ *       - UserIdAuth: []
  *     parameters:
  *       - in: query
  *         name: itemType
- *         schema: { type: 'string', enum: [crop, product] }
+ *         schema: { type: string, enum: [crop, product] }
  *     responses:
  *       200:
  *         description: List of active market listings
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/BaseResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: array
+ *                       items: { $ref: '#/components/schemas/MarketListing' }
  *   post:
  *     tags:
  *       - Market
- *     summary: Create a new listing
+ *     summary: Create a new market listing
  *     security:
- *       - bearerAuth: []
+ *       - UserIdAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -32,32 +43,27 @@ const router = Router();
  *             type: object
  *             required: [itemType, itemId, quantity, pricePerUnit]
  *             properties:
- *               itemType: { type: 'string', enum: [crop, product] }
- *               itemId: { type: 'integer' }
- *               quantity: { type: 'string' }
- *               pricePerUnit: { type: 'string' }
+ *               itemType: { type: string, enum: [crop, product] }
+ *               itemId: { type: integer, example: 1 }
+ *               quantity: { type: string, example: '10.00' }
+ *               pricePerUnit: { type: string, example: '25.00' }
  *     responses:
  *       201:
  *         description: Listing created
- */
-router.get('/listings', marketController.getListings);
-router.post('/listings', marketController.createListing);
-
-/**
- * @openapi
+ *
  * /api/market/listings/{id}/buy:
  *   post:
  *     tags:
  *       - Market
  *     summary: Buy an item from a listing
  *     security:
- *       - bearerAuth: []
+ *       - UserIdAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         schema:
- *           type: integer
+ *         schema: { type: integer }
+ *         description: Market listing ID
  *     requestBody:
  *       required: true
  *       content:
@@ -66,12 +72,14 @@ router.post('/listings', marketController.createListing);
  *             type: object
  *             required: [qty, offerPrice]
  *             properties:
- *               qty: { type: 'string' }
- *               offerPrice: { type: 'string' }
+ *               qty: { type: string, example: '5.00' }
+ *               offerPrice: { type: string, example: '25.00' }
  *     responses:
  *       200:
  *         description: Purchase successful
  */
+router.get('/listings', marketController.getListings);
+router.post('/listings', marketController.createListing);
 router.post('/listings/:id/buy', marketController.buyItem);
 
 module.exports = router;

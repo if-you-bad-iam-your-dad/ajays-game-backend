@@ -1,14 +1,13 @@
-const { apiPost, apiGet, logResult } = require('./testHelper');
+const { apiGet, apiPost, logResult } = require('./testHelper');
+
+// Seed user IDs (from seedData.js)
+const FARMER_ID = 1;
 
 async function testMarket() {
-  console.log('Testing Market API...');
-  
-  const login = await apiPost('/auth/login', { email: 'farmer@test.com', password: 'password123' });
-  if (!login.success) return;
-  const token = login.data.token;
+  console.log('\nTesting Market API...');
 
-  // 1. Get Listings
-  const listings = await apiGet('/market/listings', token);
+  // 1. Get Listings (no userId required — public listing view)
+  const listings = await apiGet('/market/listings', FARMER_ID);
   logResult('Get Market Listings', listings.success && Array.isArray(listings.data), listings);
 
   // 2. Create Listing
@@ -17,7 +16,7 @@ async function testMarket() {
     itemId: 1,
     quantity: '10.00',
     pricePerUnit: '25.00'
-  }, token);
+  }, FARMER_ID);
   logResult('Create Market Listing', newListing.success, newListing);
 }
 

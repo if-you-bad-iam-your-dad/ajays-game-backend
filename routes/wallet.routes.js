@@ -1,6 +1,5 @@
 const { Router } = require('express');
 const walletController = require('../controllers/wallet.controller');
-const { protect } = require('../middleware/auth.middleware');
 
 const router = Router();
 
@@ -10,36 +9,46 @@ const router = Router();
  *   get:
  *     tags:
  *       - Wallet
- *     summary: Get user wallet details
+ *     summary: Get wallet balance
  *     security:
- *       - bearerAuth: []
+ *       - UserIdAuth: []
  *     responses:
  *       200:
  *         description: Current wallet balance and reserved funds
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/BaseResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data: { $ref: '#/components/schemas/Wallet' }
+ *
  * /api/wallet/transactions:
  *   get:
  *     tags:
  *       - Wallet
  *     summary: Get wallet transaction ledger
  *     security:
- *       - bearerAuth: []
+ *       - UserIdAuth: []
  *     parameters:
  *       - in: query
  *         name: page
- *         schema: { type: 'integer', default: 1 }
+ *         schema: { type: integer, default: 1 }
  *       - in: query
  *         name: limit
- *         schema: { type: 'integer', default: 10 }
+ *         schema: { type: integer, default: 10 }
  *     responses:
  *       200:
  *         description: Paginated transaction ledger
+ *
  * /api/wallet/transfer:
  *   post:
  *     tags:
  *       - Wallet
- *     summary: Transfer funds between users
+ *     summary: Transfer funds to another user
  *     security:
- *       - bearerAuth: []
+ *       - UserIdAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -48,9 +57,9 @@ const router = Router();
  *             type: object
  *             required: [recipientId, amount]
  *             properties:
- *               recipientId: { type: 'integer' }
- *               amount: { type: 'string', example: '100.00' }
- *               reason: { type: 'string' }
+ *               recipientId: { type: integer, example: 2 }
+ *               amount: { type: string, example: '100.00' }
+ *               reason: { type: string, example: 'Payment for crops' }
  *     responses:
  *       200:
  *         description: Transfer successful

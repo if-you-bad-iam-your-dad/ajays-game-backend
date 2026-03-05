@@ -1,6 +1,5 @@
 const { Router } = require('express');
 const landController = require('../controllers/land.controller');
-const { protect, authorize } = require('../middleware/auth.middleware');
 
 const router = Router();
 
@@ -12,37 +11,50 @@ const router = Router();
  *       - Agriculture
  *     summary: Get user land ownership
  *     security:
- *       - bearerAuth: []
+ *       - UserIdAuth: []
  *     responses:
  *       200:
  *         description: List of lands owned by the user
- */
-router.get('/', landController.getLands);
-
-/**
- * @openapi
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/BaseResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: array
+ *                       items: { $ref: '#/components/schemas/Land' }
+ *
  * /api/lands/seasons/active:
  *   get:
  *     tags:
  *       - Agriculture
  *     summary: Get currently active season
  *     security:
- *       - bearerAuth: []
+ *       - UserIdAuth: []
  *     responses:
  *       200:
  *         description: Active season details
- */
-router.get('/seasons/active', landController.getActiveSeason);
-
-/**
- * @openapi
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/BaseResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data: { $ref: '#/components/schemas/Season' }
+ *
  * /api/lands/farm-plans:
  *   post:
  *     tags:
  *       - Agriculture
- *     summary: Select crop for a season (Create farm plan)
+ *     summary: Create farm plan (select crop for a season)
+ *     description: |
+ *       Formula: `planned_yield = crop.base_yield * areaAllocated * seed.yield_multiplier`
+ *       Only available for the `farmer` role. Only one active plan per season allowed.
  *     security:
- *       - bearerAuth: []
+ *       - UserIdAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -51,15 +63,25 @@ router.get('/seasons/active', landController.getActiveSeason);
  *             type: object
  *             required: [landId, seasonId, cropId, seedId, areaAllocated]
  *             properties:
- *               landId: { type: 'integer' }
- *               seasonId: { type: 'integer' }
- *               cropId: { type: 'integer' }
- *               seedId: { type: 'integer' }
- *               areaAllocated: { type: 'string', example: '5.5' }
+ *               landId: { type: integer, example: 1 }
+ *               seasonId: { type: integer, example: 1 }
+ *               cropId: { type: integer, example: 1 }
+ *               seedId: { type: integer, example: 1 }
+ *               areaAllocated: { type: string, example: '5.5' }
  *     responses:
  *       201:
- *         description: Farm plan created
+ *         description: Farm plan created with computed planned_yield
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/BaseResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data: { $ref: '#/components/schemas/FarmPlan' }
  */
-router.post('/farm-plans', authorize('farmer'), landController.createFarmPlan);
+router.get('/', landController.getLands);
+router.get('/seasons/active', landController.getActiveSeason);
+router.post('/farm-plans', landController.createFarmPlan);
 
 module.exports = router;

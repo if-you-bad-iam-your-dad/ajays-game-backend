@@ -12,7 +12,6 @@ const landRoutes = require('./routes/land.routes');
 const loanRoutes = require('./routes/loan.routes');
 const systemRoutes = require('./routes/system.routes');
 const advancedRoutes = require('./routes/advanced.routes');
-const idempotency = require('./middleware/idempotency.middleware');
 const errorHandler = require('./middleware/error.middleware');
 
 const { checkConnection } = require('./config/database');
@@ -27,31 +26,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Swagger Documentation
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// Disable CSP only for /api-docs — Helmet blocks Swagger's inline bootstrap script by default
+app.use('/api-docs', (req, res, next) => {
+  res.setHeader('Content-Security-Policy', '');
+  next();
+}, swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Unity Compatibility: Direct Swagger JSON access
 app.get('/swagger.json', (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   res.send(swaggerSpec);
 });
-
-// Routes
-// Note: Idempotency middleware is now applied inside routes or after auth
-app.use('/api/auth', authRoutes);
-
-// Protected routes should have idempotency
-const { protect } = require('./middleware/auth.middleware');
-app.use(protect);
-app.use(idempotency);
-
-app.use('/api/market', marketRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/wallet', walletRoutes);
-app.use('/api/lands', landRoutes);
-app.use('/api/loans', loanRoutes);
-app.use('/api/system', systemRoutes);
-app.use('/api/advanced', advancedRoutes);
-
 
 /**
  * @openapi
@@ -89,6 +74,20 @@ app.get('/health', async (req, res) => {
 app.get('/', (req, res) => {
   res.send('FinLit Backend API - Running');
 });
+
+// Routes
+app.use('/api/auth', authRoutes); // public — register & login (returns userId)
+
+// Protected routes — require X-User-Id header
+const { protect } = require('./middleware/auth.middleware');
+
+app.use('/api/market', protect, marketRoutes);
+app.use('/api/users', protect, userRoutes);
+app.use('/api/wallet', protect, walletRoutes);
+app.use('/api/lands', protect, landRoutes);
+app.use('/api/loans', protect, loanRoutes);
+app.use('/api/system', protect, systemRoutes);
+app.use('/api/advanced', protect, advancedRoutes);
 
 // Error Handling
 app.use(errorHandler);

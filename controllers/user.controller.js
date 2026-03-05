@@ -5,7 +5,7 @@ exports.getMe = async (req, res) => {
     const user = await User.findByPk(req.user.id, {
       attributes: ['id', 'username', 'email', 'status'],
       include: [
-        { model: Role, as: 'role', attributes: ['role_key', 'name'] },
+        { model: Role, as: 'role', attributes: ['role_key', 'description'] },
         { model: UserProfile, as: 'profile' },
         { model: UserWallet, as: 'wallet' }
       ]

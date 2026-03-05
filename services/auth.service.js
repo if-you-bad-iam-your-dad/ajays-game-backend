@@ -1,5 +1,4 @@
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const { User, Role, UserProfile, UserWallet, sequelize } = require('../models');
 
 class AuthService {
@@ -21,7 +20,6 @@ class AuthService {
     const transaction = await sequelize.transaction();
 
     try {
-      // Hash password
       const salt = await bcrypt.genSalt(10);
       const password_hash = await bcrypt.hash(password, salt);
 
@@ -34,18 +32,16 @@ class AuthService {
       }, { transaction });
 
       // Initialize profile
-      await UserProfile.create({
-        user_id: user.id,
-      }, { transaction });
+      await UserProfile.create({ user_id: user.id }, { transaction });
 
-      // Initialize wallet
+      // Initialize wallet with starting balance
       await UserWallet.create({
         user_id: user.id,
-        balance: 1000.00, // Starting balance for testing
+        balance: 1000.00,
       }, { transaction });
 
       await transaction.commit();
-      
+
       const { password_hash: _, ...userWithoutPassword } = user.toJSON();
       return userWithoutPassword;
     } catch (error) {
@@ -54,29 +50,21 @@ class AuthService {
     }
   }
 
+  // Login now returns userId instead of a JWT token
   async login(email, password) {
     const user = await User.findOne({
       where: { email },
-      include: [{ model: Role, as: 'role' }]
+      include: [{ model: Role, as: 'role', attributes: ['role_key', 'description'] }]
     });
 
-    if (!user) {
-      throw new Error('Invalid credentials');
-    }
+    if (!user) throw new Error('Invalid credentials');
 
     const isMatch = await bcrypt.compare(password, user.password_hash);
-    if (!isMatch) {
-      throw new Error('Invalid credentials');
-    }
-
-    const token = jwt.sign(
-      { id: user.id, role: user.role.role_key },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN }
-    );
+    if (!isMatch) throw new Error('Invalid credentials');
 
     const { password_hash: _, ...userWithoutPassword } = user.toJSON();
-    return { user: userWithoutPassword, token };
+    // Return userId so the client can use it as X-User-Id header going forward
+    return { user: userWithoutPassword, userId: user.id };
   }
 }
 

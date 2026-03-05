@@ -11,5 +11,5 @@ const HOST = '0.0.0.0';
 
 app.listen(PORT, HOST, () => {
   console.log(`Server is running on http://${HOST}:${PORT} in ${process.env.NODE_ENV} mode`);
-  console.log(`Local network access: http://<your-local-ip>:${PORT}`);
+  console.log(`Local network access: http://10.172.169.144:${PORT}`);
 });

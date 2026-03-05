@@ -3,6 +3,7 @@ const authService = require('../services/auth.service');
 exports.register = async (req, res) => {
   try {
     const user = await authService.register(req.body);
+    console.log("req.body", req.body);
     res.status(201).json({
       success: true,
       message: 'User registered successfully',
@@ -19,11 +20,11 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const { user, token } = await authService.login(email, password);
+    const { user, userId } = await authService.login(email, password);
     res.status(200).json({
       success: true,
-      message: 'Login successful',
-      data: { user, token },
+      message: 'Login successful. Use the returned userId as X-User-Id header for all subsequent requests.',
+      data: { user, userId },
     });
   } catch (error) {
     res.status(401).json({

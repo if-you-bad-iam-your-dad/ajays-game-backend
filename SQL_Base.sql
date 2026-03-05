@@ -77,6 +77,8 @@ CREATE TABLE IF NOT EXISTS `user_profiles` (
   `digital_confidence` INT DEFAULT 0,
   `scam_awareness` INT DEFAULT 0,
   `smart_decision_rate` INT DEFAULT 50,
+  `liquid_assets` DECIMAL(14,2) NOT NULL DEFAULT 0.00,
+  `investment_value` DECIMAL(14,2) NOT NULL DEFAULT 0.00,
   PRIMARY KEY (`user_id`),
   CONSTRAINT `fk_profile_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB;
@@ -120,6 +122,7 @@ CREATE TABLE IF NOT EXISTS `wallet_transactions` (
   `amount` DECIMAL(14,2) NOT NULL,
   `balance_before` DECIMAL(14,2) NOT NULL,
   `balance_after` DECIMAL(14,2) NOT NULL,
+  `reason_code` VARCHAR(50) DEFAULT NULL,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_wallet_user_id` (`user_id`),
@@ -213,6 +216,7 @@ CREATE TABLE IF NOT EXISTS `inventory` (
   `quantity` DECIMAL(12,2) NOT NULL DEFAULT 0.00,
   `quality` VARCHAR(50) DEFAULT NULL,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `idempotency_key` VARCHAR(100) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_inventory_user_item` (`user_id`, `item_type`),
   CONSTRAINT `fk_inv_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
@@ -270,6 +274,7 @@ CREATE TABLE IF NOT EXISTS `loans` (
   `tenure_months` INT NOT NULL,
   `remaining_balance` DECIMAL(14,2) NOT NULL,
   `status` ENUM('active', 'completed', 'defaulted') DEFAULT 'active',
+  `default_count` INT DEFAULT 0,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_loan_user_id` (`user_id`),
@@ -416,14 +421,66 @@ CREATE TABLE IF NOT EXISTS `economic_state` (
   `monsoon_strength` DECIMAL(5,2) NOT NULL DEFAULT 1.00,
   `rural_credit_modifier` DECIMAL(5,2) NOT NULL DEFAULT 1.00,
   `fraud_index` DECIMAL(5,2) NOT NULL DEFAULT 0.05,
+  `agri_subsidy_modifier` DECIMAL(5,2) NOT NULL DEFAULT 1.00,
+  `investment_market_volatility` DECIMAL(5,2) NOT NULL DEFAULT 1.00,
+  `digital_fraud_index` DECIMAL(5,2) NOT NULL DEFAULT 0.05,
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB;
 
 -- ----------------------------
+-- Table structure for commodity_indices
+-- ----------------------------
+CREATE TABLE IF NOT EXISTS `commodity_indices` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `commodity_type` ENUM('crop', 'product') NOT NULL,
+  `item_id` BIGINT NOT NULL,
+  `supply_index` DECIMAL(5,2) NOT NULL DEFAULT 1.00,
+  `demand_index` DECIMAL(5,2) NOT NULL DEFAULT 1.00,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `idx_commodity_item` (`commodity_type`, `item_id`)
+) ENGINE=InnoDB;
+
+-- ----------------------------
+-- Table structure for enterprises
+-- ----------------------------
+CREATE TABLE IF NOT EXISTS `enterprises` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `user_id` BIGINT NOT NULL,
+  `name` VARCHAR(100) NOT NULL,
+  `enterprise_type` VARCHAR(50) NOT NULL,
+  `revenue` DECIMAL(14,2) NOT NULL DEFAULT 0.00,
+  `costs` DECIMAL(14,2) NOT NULL DEFAULT 0.00,
+  `tax_due` DECIMAL(14,2) NOT NULL DEFAULT 0.00,
+  `inventory_value` DECIMAL(14,2) NOT NULL DEFAULT 0.00,
+  `status` ENUM('active', 'bankrupt', 'closed') DEFAULT 'active',
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_ent_user_id` (`user_id`),
+  CONSTRAINT `fk_ent_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB;
+
+-- ----------------------------
+-- Table structure for allowance_schedules
+-- ----------------------------
+CREATE TABLE IF NOT EXISTS `allowance_schedules` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `user_id` BIGINT NOT NULL,
+  `amount` DECIMAL(14,2) NOT NULL,
+  `frequency` ENUM('monthly', 'weekly') DEFAULT 'monthly',
+  `next_credit_date` DATETIME NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_allowance_user_id` (`user_id`),
+  CONSTRAINT `fk_allowance_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB;
+
+-- ----------------------------
 -- Seed data for economic_state
 -- ----------------------------
-INSERT INTO `economic_state` (`id`, `inflation_rate`, `monsoon_strength`, `rural_credit_modifier`, `fraud_index`) VALUES (1, 5.00, 1.00, 1.00, 0.05);
+INSERT INTO `economic_state` (`id`, `inflation_rate`, `monsoon_strength`, `rural_credit_modifier`, `fraud_index`, `agri_subsidy_modifier`, `investment_market_volatility`, `digital_fraud_index`) 
+VALUES (1, 5.00, 1.00, 1.00, 0.05, 1.00, 1.00, 0.05);
 
 -- ----------------------------
 -- Table structure for action_logs

@@ -43,6 +43,8 @@ CREATE TABLE user_profiles (
     digital_confidence INT DEFAULT 0,
     scam_awareness INT DEFAULT 0,
     smart_decision_rate INT DEFAULT 50,
+    liquid_assets DECIMAL(14,2) DEFAULT 0.00,
+    investment_value DECIMAL(14,2) DEFAULT 0.00,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 ```
@@ -122,6 +124,7 @@ CREATE TABLE inventory (
     quantity DECIMAL(12,2),
     quality VARCHAR(50),
     created_at DATETIME,
+    idempotency_key VARCHAR(100),
     FOREIGN KEY (user_id) REFERENCES users(id),
     INDEX (user_id, item_type)
 );
@@ -181,6 +184,7 @@ CREATE TABLE wallet_transactions (
     amount DECIMAL(14,2),
     balance_before DECIMAL(14,2),
     balance_after DECIMAL(14,2),
+    reason_code VARCHAR(50),
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
@@ -213,6 +217,7 @@ CREATE TABLE loans (
     tenure_months INT,
     remaining_balance DECIMAL(14,2),
     status ENUM('active','completed','defaulted'),
+    default_count INT DEFAULT 0,
     created_at DATETIME,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
@@ -345,8 +350,51 @@ CREATE TABLE economic_state (
     monsoon_strength DECIMAL(5,2),
     rural_credit_modifier DECIMAL(5,2),
     fraud_index DECIMAL(5,2),
+    agri_subsidy_modifier DECIMAL(5,2),
+    investment_market_volatility DECIMAL(5,2),
+    digital_fraud_index DECIMAL(5,2),
     updated_at DATETIME
 );
+
+### commodity_indices
+```sql
+CREATE TABLE commodity_indices (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    commodity_type ENUM('crop', 'product'),
+    item_id BIGINT,
+    supply_index DECIMAL(5,2),
+    demand_index DECIMAL(5,2),
+    updated_at DATETIME
+);
+```
+
+### enterprises
+```sql
+CREATE TABLE enterprises (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT,
+    name VARCHAR(100),
+    enterprise_type VARCHAR(50),
+    revenue DECIMAL(14,2),
+    costs DECIMAL(14,2),
+    tax_due DECIMAL(14,2),
+    inventory_value DECIMAL(14,2),
+    status ENUM('active', 'bankrupt', 'closed'),
+    created_at DATETIME
+);
+```
+
+### allowance_schedules
+```sql
+CREATE TABLE allowance_schedules (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT,
+    amount DECIMAL(14,2),
+    frequency ENUM('monthly', 'weekly'),
+    next_credit_date DATETIME,
+    created_at DATETIME
+);
+```
 ```
 
 ## 15. Audit System

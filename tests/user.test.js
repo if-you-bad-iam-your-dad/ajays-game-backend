@@ -1,22 +1,17 @@
-const { apiPost, apiGet, apiPatch, logResult } = require('./testHelper');
+const { apiGet, apiPatch, logResult } = require('./testHelper');
+
+// Seed user IDs (from seedData.js)
+const FARMER_ID = 1;
 
 async function testUser() {
-  console.log('Testing User API...');
-  
-  // Login first to get token
-  const login = await apiPost('/auth/login', { email: 'farmer@test.com', password: 'password123' });
-  if (!login.success) {
-    console.log('Skipping User tests: Could not login (Ensure seed script was run)');
-    return;
-  }
-  const token = login.data.token;
+  console.log('\nTesting User API...');
 
   // 1. Get Me
-  const me = await apiGet('/users/me', token);
-  logResult('Get Current User Profile', me.success && !!me.data.profile, me);
+  const me = await apiGet('/users/me', FARMER_ID);
+  logResult('Get Current User Profile', me.success && !!me.data, me);
 
   // 2. Update Profile
-  const update = await apiPatch('/users/me', { username: 'UpdatedName' }, token);
+  const update = await apiPatch('/users/me', { username: 'UpdatedFarmer' }, FARMER_ID);
   logResult('Update Profile', update.success, update);
 }
 
