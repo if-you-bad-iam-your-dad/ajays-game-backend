@@ -12,8 +12,8 @@ const DB_POOL = {
     // reapIntervalMillis: 1000,createRetryIntervalMillis: 100,propagateCreateError: true
 };
 
-const Knexhotel = require("knex")({
-    client: (process.env.OS_VALUE && process.env.OS_VALUE === 'windows') ? "mysql2" : "mysql",
+const Knexgame = require("knex")({
+    client: "mysql2",
     connection: {
         host: DB_HOST,
         user: DB_USER,
@@ -25,4 +25,4 @@ const Knexhotel = require("knex")({
     pool: DB_POOL,
 });
 
-module.exports = { Knexhotel };
+module.exports = { Knexgame };

@@ -1,0 +1,805 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Ajay's Game Backend API",
+    "version": "1.0.0",
+    "description": "Manual OpenAPI definition for Ajay's Game backend."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Users"
+    },
+    {
+      "name": "Farmer"
+    },
+    {
+      "name": "Logs"
+    }
+  ],
+  "paths": {
+    "/admin/users": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get all users",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserIdHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Users fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsersResponse"
+                },
+                "example": {
+                  "message": "Users fetched successfully",
+                  "data": [
+                    {
+                      "id": 1,
+                      "email": "ravi.farmer@example.com",
+                      "username": "ravi_farmer",
+                      "role_id": 1,
+                      "language": 1,
+                      "status": "online",
+                      "is_active": true
+                    },
+                    {
+                      "id": 2,
+                      "email": "priya.woman@example.com",
+                      "username": "priya_woman",
+                      "role_id": 2,
+                      "language": 2,
+                      "status": "offline",
+                      "is_active": true
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User id required or invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "message": "user_id required (x-user-id header or user_id param)"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "message": "Error fetching users",
+                  "error": "Database connection failed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/users/register": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Register a new user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCreateRequest"
+              },
+              "example": {
+                "email": "player@example.com",
+                "username": "player_one",
+                "password": "123456",
+                "role_id": 1,
+                "language": 1,
+                "is_active": true,
+                "status": "offline"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserCreatedResponse"
+                },
+                "example": {
+                  "message": "User registered successfully",
+                  "data": {
+                    "id": 6,
+                    "email": "player@example.com",
+                    "username": "player_one",
+                    "role_id": 1,
+                    "language": 1,
+                    "is_active": true,
+                    "status": "offline"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "message": "Error registering user",
+                  "error": "ER_DUP_ENTRY: Duplicate entry for email"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/users/login": {
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Login a user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              },
+              "example": {
+                "email": "admin@example.com",
+                "password": "123456"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User logged in successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                },
+                "example": {
+                  "message": "User logged in successfully",
+                  "data": {
+                    "id": 5,
+                    "email": "admin@example.com",
+                    "username": "super_admin",
+                    "role_id": 5,
+                    "language": 1,
+                    "status": "online",
+                    "is_active": true
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "message": "Invalid credentials"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "message": "User not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "message": "Error logging in user",
+                  "error": "Unexpected server error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/users/roles": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get all roles",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserIdHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Roles fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RolesResponse"
+                },
+                "example": {
+                  "message": "Roles fetched successfully",
+                  "data": [
+                    {
+                      "id": 1,
+                      "role": "farmer",
+                      "description": "Farmer role"
+                    },
+                    {
+                      "id": 5,
+                      "role": "admin",
+                      "description": "Administrator with full access"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User id required or invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "message": "Invalid user_id"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "message": "Error fetching roles",
+                  "error": "Database connection failed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/farmer": {
+      "get": {
+        "tags": [
+          "Farmer"
+        ],
+        "summary": "Get farmers",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserIdHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Farmers fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericMessageResponse"
+                },
+                "example": {
+                  "message": "Farmers fetched successfully (placeholder)"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User id required or invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "message": "user_id required (x-user-id header or user_id param)"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "message": "Error fetching farmers",
+                  "error": "Unexpected server error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/logs": {
+      "get": {
+        "tags": [
+          "Logs"
+        ],
+        "summary": "Get all logs",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserIdHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Logs fetched successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogsResponse"
+                },
+                "example": {
+                  "message": "Logs fetched successfully",
+                  "data": [
+                    {
+                      "id": 1,
+                      "level": "INFO",
+                      "module": "http",
+                      "action": "GET /admin/users",
+                      "user_id": 1,
+                      "ip_address": "::1",
+                      "user_agent": "Mozilla/5.0",
+                      "request_id": "8d0a4f4e9d8a4b0db9dc7d5a2c8f1a11",
+                      "metadata": "{\"method\":\"GET\",\"url\":\"/admin/users\"}",
+                      "created_at": "2026-03-06T15:30:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User id required or invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "message": "Invalid user_id"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "message": "Error fetching logs",
+                  "error": "Database connection failed"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "UserIdHeader": {
+        "name": "x-user-id",
+        "in": "header",
+        "required": true,
+        "description": "Logged-in user id required by middleware for protected endpoints.",
+        "schema": {
+          "type": "integer",
+          "example": 1
+        }
+      }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "example": {
+          "id": 1,
+          "email": "ravi.farmer@example.com",
+          "username": "ravi_farmer",
+          "role_id": 1,
+          "language": 1,
+          "status": "online",
+          "is_active": true
+        },
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "email": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "role_id": {
+            "type": "integer"
+          },
+          "language": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string"
+          },
+          "is_active": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Role": {
+        "type": "object",
+        "example": {
+          "id": 1,
+          "role": "farmer",
+          "description": "Farmer role"
+        },
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "role": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "Log": {
+        "type": "object",
+        "example": {
+          "id": 1,
+          "level": "INFO",
+          "module": "http",
+          "action": "GET /admin/users",
+          "user_id": 1,
+          "ip_address": "::1",
+          "user_agent": "Mozilla/5.0",
+          "request_id": "8d0a4f4e9d8a4b0db9dc7d5a2c8f1a11",
+          "metadata": "{\"method\":\"GET\",\"url\":\"/admin/users\"}",
+          "created_at": "2026-03-06T15:30:00.000Z"
+        },
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "level": {
+            "type": "string"
+          },
+          "module": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string"
+          },
+          "user_id": {
+            "type": "integer"
+          },
+          "ip_address": {
+            "type": "string"
+          },
+          "user_agent": {
+            "type": "string"
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "metadata": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "UsersResponse": {
+        "type": "object",
+        "example": {
+          "message": "Users fetched successfully",
+          "data": [
+            {
+              "id": 1,
+              "email": "ravi.farmer@example.com",
+              "username": "ravi_farmer",
+              "role_id": 1,
+              "language": 1,
+              "status": "online",
+              "is_active": true
+            }
+          ]
+        },
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            }
+          }
+        }
+      },
+      "RolesResponse": {
+        "type": "object",
+        "example": {
+          "message": "Roles fetched successfully",
+          "data": [
+            {
+              "id": 1,
+              "role": "farmer",
+              "description": "Farmer role"
+            }
+          ]
+        },
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Role"
+            }
+          }
+        }
+      },
+      "LogsResponse": {
+        "type": "object",
+        "example": {
+          "message": "Logs fetched successfully",
+          "data": [
+            {
+              "id": 1,
+              "level": "INFO",
+              "module": "http",
+              "action": "GET /admin/users",
+              "user_id": 1,
+              "ip_address": "::1",
+              "user_agent": "Mozilla/5.0",
+              "request_id": "8d0a4f4e9d8a4b0db9dc7d5a2c8f1a11",
+              "metadata": "{\"method\":\"GET\",\"url\":\"/admin/users\"}",
+              "created_at": "2026-03-06T15:30:00.000Z"
+            }
+          ]
+        },
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Log"
+            }
+          }
+        }
+      },
+      "GenericMessageResponse": {
+        "type": "object",
+        "example": {
+          "message": "Farmers fetched successfully (placeholder)"
+        },
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "UserCreateRequest": {
+        "type": "object",
+        "example": {
+          "email": "player@example.com",
+          "username": "player_one",
+          "password": "123456",
+          "role_id": 1,
+          "language": 1,
+          "is_active": true,
+          "status": "offline"
+        },
+        "required": [
+          "email",
+          "username",
+          "password"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "username": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "role_id": {
+            "type": "integer"
+          },
+          "language": {
+            "type": "integer"
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "online",
+              "offline"
+            ]
+          }
+        }
+      },
+      "UserCreatedResponse": {
+        "type": "object",
+        "example": {
+          "message": "User registered successfully",
+          "data": {
+            "id": 6,
+            "email": "player@example.com",
+            "username": "player_one",
+            "role_id": 1,
+            "language": 1,
+            "is_active": true,
+            "status": "offline"
+          }
+        },
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "email": {
+                "type": "string"
+              },
+              "username": {
+                "type": "string"
+              },
+              "role_id": {
+                "type": "integer"
+              },
+              "language": {
+                "type": "integer"
+              },
+              "is_active": {
+                "type": "boolean"
+              },
+              "status": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "example": {
+          "email": "admin@example.com",
+          "password": "123456"
+        },
+        "required": [
+          "email",
+          "password"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "example": {
+          "message": "User logged in successfully",
+          "data": {
+            "id": 5,
+            "email": "admin@example.com",
+            "username": "super_admin",
+            "role_id": 5,
+            "language": 1,
+            "status": "online",
+            "is_active": true
+          }
+        },
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/User"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "example": {
+          "message": "Error fetching users",
+          "error": "Database connection failed"
+        },
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

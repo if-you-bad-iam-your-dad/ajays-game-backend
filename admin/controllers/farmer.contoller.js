@@ -1,4 +1,9 @@
-const getFarmers = async (req, res) => {
+const { Knexgame } = require("../config/db_config");
+
+const farmerstable = 'farmers';
+
+
+exports.getFarmers = async (req, res) => {
     try {
         res.status(200).json({ message: "Farmers fetched successfully (placeholder)" });
     } catch (error) {
@@ -6,6 +11,4 @@ const getFarmers = async (req, res) => {
     }
 };
 
-module.exports = {
-    getFarmers
-};
+
